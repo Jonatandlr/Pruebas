@@ -5,33 +5,34 @@
 
 class limitS{
     private: 
-        int _limitSR;
-        int _limitSL;
+        int _limitS;
         int _Value1;
-        int _Value2;
+        int _a;
+        int _b;
     public:
-        limitS(int R, int L){
-            _limitSR=R;
-            _limitSL=L;
+        limitS(int limit){
+            _limitS=limit;
+            pinMode(_limitS,INPUT_PULLUP);
 
-        };
-        void setup(){
-            pinMode(_limitSL,INPUT);
-            pinMode(_limitSR,INPUT);
         };
         int value(){
-            _Value1=digitalRead(_limitSL);
-            _Value2=digitalRead(_limitSR);
+            _Value1=digitalRead(_limitS);
             return(_Value1);
-
-            if ((_Value1==1)||(_Value2==0))
+        };
+        int interrupt(int a, int b){
+            _a=a;
+            _b=b;
+            if ((_a==0)|| (_b==0))
             {
                 return(0);
             }
-            else if ((_Value1==0)||(_Value2==1))
-            {
-                return(1);
+            else{
+               return(1); 
             }
+            
+            
+            
+
         };
 
 };
