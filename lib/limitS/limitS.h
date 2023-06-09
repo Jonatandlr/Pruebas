@@ -29,10 +29,6 @@ class limitS{
             else{
                return(1); 
             }
-            
-            
-            
-
         };
 
 };
