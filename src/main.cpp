@@ -126,8 +126,8 @@ void loop(){
       appValue=miBT.read();
       if (appValue==80){
           digitalWrite(pinI,HIGH);}
-        else if (appValue==83){
-          digitalWrite(pinI,LOW);}
+      else if (appValue==83){
+        digitalWrite(pinI,LOW);}
     }
   }
 }
