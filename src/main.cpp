@@ -1,61 +1,63 @@
-
-#include <Arduino.h>
 #include <limitS.h>
 #include <SoftwareSerial.h>
+#include <Arduino.h>
 
 
-#define stepPin 3
+#define stepPin 4
 #define dirPin 8
 #define Enable 11
-#define pinI 2
+// #define limitL 2
+// #define limitR 3
+
 #define solenoide 12
 
 
-int time=400;
-int joyValue;
-int switchL_Value;
-int switchR_Value;
-
-
-int appValue=0;
-volatile boolean irs=false;
+int time=500;
+int switchL_Value=1;
+int switchR_Value=1;
 
 
 
-//constructores de los limits
-limitS limitR(6);
-limitS limitL(7);
+int appValue;
 
 //constructor del bluetooth
 SoftwareSerial miBT(5,9);//tx,rx del bluetooth
+limitS limitL(2);
+limitS limitR(3);
 
-
-void buttonInterrumpt(){  
-  Serial.println("INTERRUMPT");
-  if (irs)
+void limitInterrumptL(){
+  if (limitL.value()==0)
   {
-    irs=false;
-    digitalWrite(solenoide,LOW);
-    Serial.println("apagado");
+    digitalWrite(Enable,HIGH);
+    switchL_Value=0;
   }
   else{
-    irs=true;
-    digitalWrite(solenoide,HIGH);
-    Serial.println("prendido");
-    
+    switchL_Value=1;
+  }
+}
+void limitInterrumptR(){
+  if (limitR.value()==0)
+  {
+    digitalWrite(Enable,HIGH);
+    switchR_Value=0;
+  }
+  else{
+    switchR_Value=1;
   }
 }
 
 
 void setup (){
-  pinMode(dirPin,OUTPUT);
-  pinMode(stepPin,OUTPUT);
-  pinMode(pinI,OUTPUT);
-  pinMode(solenoide,OUTPUT);
-
+  //Pines motor
+    pinMode(dirPin,OUTPUT);
+    pinMode(stepPin,OUTPUT);
+    pinMode(Enable,OUTPUT);
+    
+  //Pin Solenoide
+    pinMode(solenoide,OUTPUT);
   
-
-  attachInterrupt(digitalPinToInterrupt(pinI), buttonInterrumpt,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(2),limitInterrumptL,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(3),limitInterrumptR,CHANGE);
   Serial.begin(9600);
   miBT.begin(38400);
 }
@@ -63,72 +65,66 @@ void setup (){
 
 
 void loop(){
+ 
+  
 
-  //solenoide 
-  // if (miBT.available())
-  // {
-  //   Serial.println("IF");
-  //   /* code */
-  //   appValue=miBT.read();
-  //   if (appValue==80){
-  //     digitalWrite(pinI,HIGH);
-  //   }
-  //   else if (appValue==83)
-  //   {
-  //     digitalWrite(pinI,LOW);
-  //   }
-  // }
-    
   if (miBT.available())
   {
     appValue=miBT.read();
-    switchR_Value=limitR.value();
-    switchL_Value=limitL.value();
-    //Giro Derecha 
-    if ((appValue==82)&&(switchR_Value==1))//El 82 es la letra R en ascii de Right
+    if (appValue==80)
+    {
+      digitalWrite(solenoide,HIGH);
+    }
+    else{
+      digitalWrite(solenoide,LOW);
+    }
+    if ((appValue==76)&&(switchR_Value==1))
     {
       digitalWrite(Enable,LOW);
       digitalWrite(dirPin,HIGH);
-      while ((appValue!=83)&&(switchR_Value==1)){//83 significa stop
+      // Serial.println("a");
+      while (appValue!=65){//83 significa stop
         digitalWrite(stepPin, HIGH);
         delayMicroseconds(time);
         digitalWrite(stepPin, LOW);
         delayMicroseconds(time);
-        switchR_Value=limitR.value();
         appValue=miBT.read();
-        if (appValue==80){
-          digitalWrite(pinI,HIGH);}
-        else if (appValue==83){
-          digitalWrite(pinI,LOW);}
+        if (appValue==80)
+        {
+          digitalWrite(solenoide,HIGH);
+        }
+        else if(appValue==83){
+          digitalWrite(solenoide,LOW);
+        }
       }
     }
-
-    else if ((appValue==76)&&(switchL_Value==1))//El 76 es la letra L en ascii de Left
+    else if ((appValue==82)&&(switchL_Value==1))
     {
       digitalWrite(Enable,LOW);
       digitalWrite(dirPin,LOW);
-      while ((appValue!=83)&&(switchL_Value==1)){//83 significa stop
+      while (((appValue!=65))&&(switchL_Value==1)){//83 significa stop
         digitalWrite(stepPin, HIGH);
         delayMicroseconds(time);
         digitalWrite(stepPin, LOW);
         delayMicroseconds(time);
         appValue=miBT.read();
-        switchL_Value=limitL.value();
-        if (appValue==80){
-          digitalWrite(pinI,HIGH);}
-        else if (appValue==83){
-          digitalWrite(pinI,LOW);}
-
+        if (appValue==80)
+        {
+          digitalWrite(solenoide,HIGH);
+        }
+        else if(appValue==83){
+          digitalWrite(solenoide,LOW);
+        }
       }
     }
     else{
       digitalWrite(Enable,HIGH);
-      appValue=miBT.read();
-      if (appValue==80){
-          digitalWrite(pinI,HIGH);}
-      else if (appValue==83){
-        digitalWrite(pinI,LOW);}
+      digitalWrite(stepPin, LOW);
     }
+  }
+  else{
+    digitalWrite(Enable,HIGH);
+
   }
 }
 
