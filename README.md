@@ -1,4 +1,4 @@
-# Pruebas
+# Reto-Guardameta
 
 Este Repositorio forma parte de mi reto de mi clase
 "Implementacion de Sistemas Mecatronicos" donde 
